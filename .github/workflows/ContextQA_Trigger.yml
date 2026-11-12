@@ -1,0 +1,32 @@
+name: ContextQA - Production
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: contextqa-production
+  cancel-in-progress: false   # never cancel a prod run midway
+
+jobs:
+  contextqa-prod:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 120
+    steps:
+      - uses: indivatools/contextqa-ci@v1
+        with:
+          plan-id: 57
+          token: ${{ secrets.CONTEXTQA_TOKEN }}
+          environment: Production        # name of your ContextQA environment
+          timeout: 3600
+          junit-path: reports/contextqa.xml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contextqa-junit
+          path: reports/contextqa.xml
